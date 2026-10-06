@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Java–MySQL Database App</title>
+  <meta name="description" content="A database-driven application for managing records with Java and MySQL. Full CRUD operations and SQL queries for efficient data retrieval.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#demo">Skip to the demo</a>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Java–MySQL Database App, home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Java–MySQL DB App</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#demo">Try it</a>
+      <a href="#how">How it works</a>
+      <a href="#stack">Stack</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <h1>Java–MySQL<br>Database App</h1>
+      <p class="lede">A database-driven application for managing records. It supports full create, read, update and delete operations, and uses SQL queries to find the right data quickly.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" id="demoLink" href="#demo">Live demo</a>
+        <a class="btn btn-ghost" id="codeLink" href="#" target="_blank" rel="noopener">View code on GitHub</a>
+      </div>
+      <ul class="tags" aria-label="Technologies">
+        <li>Java</li><li>MySQL</li><li>SQL</li><li>OOP</li><li>CRUD</li>
+      </ul>
+    </section>
+
+    <!-- LIVE DEMO -->
+    <section class="demo" id="demo" aria-labelledby="demo-title">
+      <div class="section-head">
+        <h2 id="demo-title">Try the records manager</h2>
+        <p>This demo runs in your browser and saves to local storage. The SQL panel shows the statement the Java app sends to MySQL for every action.</p>
+      </div>
+
+      <div class="demo-grid">
+        <!-- Table -->
+        <div class="card table-card">
+          <div class="toolbar">
+            <div class="field grow">
+              <label for="search">Search name or email</label>
+              <input id="search" type="search" placeholder="e.g. priya" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="deptFilter">Department</label>
+              <select id="deptFilter"></select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="recordsTable">
+              <caption class="sr-only">Employee records</caption>
+              <thead>
+                <tr>
+                  <th scope="col" aria-sort="ascending"><button class="sort" data-key="id" type="button">ID</button></th>
+                  <th scope="col"><button class="sort" data-key="name" type="button">Name</button></th>
+                  <th scope="col"><button class="sort" data-key="department" type="button">Department</button></th>
+                  <th scope="col" class="num"><button class="sort" data-key="salary" type="button">Salary (₹)</button></th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+
+          <div class="table-foot">
+            <span id="summary" aria-live="polite"></span>
+            <button class="link-btn" id="resetBtn" type="button">Reset demo data</button>
+          </div>
+        </div>
+
+        <!-- Form + console -->
+        <div class="side">
+          <form class="card form-card" id="recordForm" novalidate>
+            <h3 id="formTitle">Add an employee</h3>
+
+            <div class="field">
+              <label for="name">Full name</label>
+              <input id="name" name="name" type="text" autocomplete="off" required>
+              <p class="error" id="nameError" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="off" required>
+              <p class="error" id="emailError" role="alert"></p>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label for="department">Department</label>
+                <select id="department" name="department"></select>
+              </div>
+              <div class="field">
+                <label for="salary">Salary (₹)</label>
+                <input id="salary" name="salary" type="number" min="0" step="1" inputmode="numeric" required>
+                <p class="error" id="salaryError" role="alert"></p>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" id="submitBtn" type="submit">Add employee</button>
+              <button class="btn btn-ghost" id="cancelBtn" type="button" hidden>Cancel</button>
+            </div>
+          </form>
+
+          <section class="console" aria-labelledby="console-title">
+            <div class="console-head">
+              <h3 id="console-title">SQL sent to MySQL</h3>
+              <button class="copy" id="copyBtn" type="button">Copy SQL</button>
+            </div>
+            <pre class="console-sql" id="sqlNow" aria-live="polite"></pre>
+            <p class="console-status" id="sqlStatus"></p>
+            <ol class="history" id="history" aria-label="Recent statements"></ol>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how" id="how" aria-labelledby="how-title">
+      <div class="section-head">
+        <h2 id="how-title">How a request travels</h2>
+        <p>Every action in the app follows the same path, from the screen to the database and back.</p>
+      </div>
+
+      <ol class="flow">
+        <li><strong>Screen</strong><span>The user fills a form or clicks a button.</span></li>
+        <li><strong>Service class</strong><span>Validates the input and calls the data layer.</span></li>
+        <li><strong>DAO + JDBC</strong><span>Runs a prepared SQL statement.</span></li>
+        <li><strong>MySQL</strong><span>Stores the rows and returns a result set.</span></li>
+      </ol>
+
+      <div class="code-card">
+        <div class="tabs" role="tablist" aria-label="CRUD operations">
+          <button role="tab" type="button" aria-selected="true" aria-controls="codePanel" id="tab-create" data-op="create">Create</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="codePanel" id="tab-read" data-op="read" tabindex="-1">Read</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="codePanel" id="tab-update" data-op="update" tabindex="-1">Update</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="codePanel" id="tab-delete" data-op="delete" tabindex="-1">Delete</button>
+        </div>
+        <pre id="codePanel" role="tabpanel" tabindex="0" aria-labelledby="tab-create"><code id="javaCode"></code></pre>
+      </div>
+    </section>
+
+    <!-- STACK -->
+    <section class="stack" id="stack" aria-labelledby="stack-title">
+      <div class="section-head">
+        <h2 id="stack-title">What the project covers</h2>
+      </div>
+      <dl class="facts">
+        <div>
+          <dt>Full CRUD</dt>
+          <dd>Add, view, edit and remove records from one interface.</dd>
+        </div>
+        <div>
+          <dt>Safe queries</dt>
+          <dd>Prepared statements keep user input out of the SQL text.</dd>
+        </div>
+        <div>
+          <dt>Fast lookups</dt>
+          <dd>WHERE, LIKE and ORDER BY return only the rows you ask for.</dd>
+        </div>
+        <div>
+          <dt>Object-oriented design</dt>
+          <dd>Model, DAO and service classes keep each job in one place.</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Built with Java, JDBC and MySQL.</p>
+    <p><a href="#top">Back to top</a></p>
+  </footer>
+
+  <!-- Delete confirmation -->
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle">
+    <form method="dialog">
+      <h3 id="confirmTitle">Delete this employee?</h3>
+      <p id="confirmText"></p>
+      <div class="form-actions">
+        <button class="btn btn-danger" id="confirmYes" value="yes">Delete</button>
+        <button class="btn btn-ghost" value="no" autofocus>Keep</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
